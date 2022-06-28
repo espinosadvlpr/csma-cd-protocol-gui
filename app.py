@@ -256,7 +256,7 @@ host_label.config(text="Host")
 
 packets_label = Label(gui, font=("times", 10, "bold"))
 packets_label.grid(row=2, column=1, pady=10, padx=5)
-packets_label.config(text="Total paquetes transmitidos")
+packets_label.config(text="Paquetes transmitidos")
 
 # Variable en la linea 159
 
@@ -289,9 +289,6 @@ def add_data(host, packets, sucess_packets, collisions, efficiency, throughput):
     Label(gui, font=("times", 10, "bold"), text=collisions).grid(row=data_row, column=3)
     Label(gui, font=("times", 10, "bold"), text=efficiency).grid(row=data_row, column=4)
     Label(gui, font=("times", 10, "bold"), text=throughput).grid(row=data_row, column=5)
-
-# La idea seria ver como meter las varibles en la interfaz, organizar todo,
-# ademas de revisar que mas pidio la ingeniera que falte
 
 
 # Run Algorithm
