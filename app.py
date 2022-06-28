@@ -180,10 +180,6 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
         (L * successfuly_transmitted_packets) /
         float(curr_time + (L/R)) * pow(10, -6), 4
     ), " Mbps"
-    #print("Paquetes exitosamente transmitidos:",successfuly_transmitted_packets)
-    #print("Cantidad de colisiones:", min_node.collisions)
-    #print("Effeciency", efficiency)
-    #print("Throughput", throughput)
 
     EFFICIENCY.append(efficiency)
     THROUGHPUT.append(throughput)
@@ -196,8 +192,6 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
     plots_button = Button(gui, text="Ver Gráficos", command=plot_data)
     plots_button.grid(row=0, column=2)
     print("")
-
-# Count time
 
 
 def get_simulation_time():
@@ -269,23 +263,19 @@ host_label = Label(gui, font=("times", 10, "bold"))
 host_label.grid(row=2, column=0, pady=10, padx=10)
 host_label.config(text="Cantidad de host")
 
-# Variable N linea 220
 
 packets_label = Label(gui, font=("times", 10, "bold"))
 packets_label.grid(row=2, column=1, pady=10, padx=5)
 packets_label.config(text="Paquetes transmitidos")
 
-# Variable en la linea 159
 
 su_packets_label = Label(gui, font=("times", 10, "bold"))
 su_packets_label.grid(row=2, column=2, pady=10, padx=10)
 su_packets_label.config(text="Paquetes transmitidos exitosamente")
-# Esta variable esta en la linea 157
 
 collisions_label = Label(gui, font=("times", 10, "bold"))
 collisions_label.grid(row=2, column=3, pady=10, padx=10)
 collisions_label.config(text="Colisiones")
-# Variable en la linea 158, revisar si se estan detectando bien esas colisiones
 
 efficience_label = Label(gui, font=("times", 10, "bold"))
 efficience_label.grid(row=2, column=4, pady=10, padx=10)
@@ -299,6 +289,7 @@ throughput.config(text="Ancho de banda")
 def handler():
     if messagebox.askokcancel("Quit?", "Are you sure you want to quit?"):
         sys.exit()
+
 
 gui.protocol("WM_DELETE_WINDOW", handler)
 
@@ -365,22 +356,15 @@ S = (2/float(3)) * C
 
 
 def exect_simulation():
-    for N in range(4, 8, 2):
-        for A in [7, 10, 20]:
+    for N in range(4, 10, 2):
+        for A in [3, 5]:
             R = 1 * pow(10, 6)
             L = 1500
             add_initial_data(N)
-            csma_cd(N, A, R, L, D, S, True)
+            csma_cd(N, A, R, L, D, S, True)  # Persistent
+            # csma_cd(N, A, R, L, D, S, False) #Non-Persistent
 
 
 thread = threading.Thread(target=exect_simulation)
 thread.start()
 gui.mainloop()  # Funcion que muestra la ventana
-
-# Show the efficiency and throughput of the LAN (in Mbps) (CSMA/CD Non-persistent)
-"""for N in range(20, 101, 20):
-    for A in [7, 10, 20]:
-        R = 1 * pow(10, 6)
-        L = 1500
-        print("Non persistent", "Nodes: ", N, "Avg Packet: ", A)
-        csma_cd(N, A, R, L, D, S, False)"""
