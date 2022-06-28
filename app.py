@@ -184,7 +184,7 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
     AVG_PACKET.append(A)
     COLISSIONS.append(min_node.collisions)
 
-    add_data(N, "packtes", successfuly_transmitted_packets, min_node.collisions, efficiency, throughput)
+    add_data(N, transmitted_packets, successfuly_transmitted_packets, min_node.collisions, efficiency, throughput)
     plots_button = Button(gui, text="Ver Gráficos", command=plot_data)
     plots_button.grid(row=0, column=2)
     print("")
@@ -256,13 +256,13 @@ host_label.config(text="Host")
 
 packets_label = Label(gui, font=("times", 10, "bold"))
 packets_label.grid(row=2, column=1, pady=10, padx=5)
-packets_label.config(text="Paquetes transmitidos")
+packets_label.config(text="Total paquetes transmitidos")
 
 # Variable en la linea 159
 
 su_packets_label = Label(gui, font=("times", 10, "bold"))
 su_packets_label.grid(row=2, column=2, pady=10, padx=10)
-su_packets_label.config(text="Paquetes entregados")
+su_packets_label.config(text="Paquetes transmitidos exitosamente")
 # Esta variable esta en la linea 157
 
 collisions_label = Label(gui, font=("times", 10, "bold"))
