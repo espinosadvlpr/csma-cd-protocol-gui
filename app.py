@@ -210,7 +210,7 @@ def refresh_time():
 def plot_data():
     win = Toplevel(gui)
     data1 = {'Ancho': THROUGHPUT, 'Host': HOST}
-    df1 = DataFrame(data1, columns=['Ancho', 'AVG'])
+    df1 = DataFrame(data1, columns=['Ancho', 'Host'])
     figure1 = plt.Figure(figsize=(5,4), dpi=50)
     ax1 = figure1.add_subplot(111)
     line1 = FigureCanvasTkAgg(figure1, win)
@@ -220,22 +220,22 @@ def plot_data():
     ax1.set_title('Ancho de banda vs Numero de host')
 
     data2 = {'Colisiones': COLISSIONS, 'Host': HOST}
-    df2 = DataFrame(data2, columns=['Ancho', 'AVG'])
+    df2 = DataFrame(data2, columns=['Colisiones', 'Host'])
     figure2 = plt.Figure(figsize=(5,4), dpi=50)
     ax2 = figure2.add_subplot(111)
     line2 = FigureCanvasTkAgg(figure2, win)
     line2.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-    df2 = df2[['Colisiones','Host']].groupby('Ancho').sum()
+    df2 = df2[['Colisiones','Host']].groupby('Colisiones').sum()
     df2.plot(kind='line', legend=True, ax=ax2, color='r',marker='o', fontsize=10)
     ax2.set_title('Colisiones vs Numero de host')
 
     data3 = {'Eficiencia': EFFICIENCY, 'Host': HOST}
-    df3 = DataFrame(data3, columns=['Ancho', 'AVG'])
+    df3 = DataFrame(data3, columns=['Eficiencia', 'Host'])
     figure3 = plt.Figure(figsize=(5,4), dpi=50)
     ax3 = figure3.add_subplot(111)
     line3 = FigureCanvasTkAgg(figure3, win)
     line3.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-    df3 = df3[['Eficiencia','Host']].groupby('Ancho').sum()
+    df3 = df3[['Eficiencia','Host']].groupby('Eficiencia').sum()
     df3.plot(kind='line', legend=True, ax=ax3, color='r',marker='o', fontsize=10)
     ax3.set_title('Eficiencia vs Numero de host')
 
