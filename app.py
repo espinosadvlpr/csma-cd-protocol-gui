@@ -155,7 +155,7 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
                     collsion_occurred_once = True
                     transmitted_packets += 1
                     node.collision_occured(R)
-                    print("Cantidad de colisiones previstas:", node.colissions)
+                    print("Cantidad de colisiones previstas:", node.collisions)
 
         # Step 3: If a collision occured then retry
         # otherwise update all nodes latest packet arrival times and proceed to the next packet
