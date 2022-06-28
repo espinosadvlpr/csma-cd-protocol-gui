@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 from tkinter import *
+from tkinter import messagebox
+import sys
 
 
 maxSimulationTime = 1000
@@ -104,6 +106,9 @@ def build_nodes(N, A, D):
 
 
 def csma_cd(N, A, R, L, D, S, is_persistent):
+    packets_label, success_packets_label = create_packets_labels()
+    collisions_label = create_collission_label()
+    collision_ocurred_gui = 0
     curr_time = 0
     transmitted_packets = 0
     successfuly_transmitted_packets = 0
@@ -123,6 +128,7 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
 
         curr_time = min_node.queue[0]
         transmitted_packets += 1
+        refresh_packets_data(packets_label, transmitted_packets)
         #print("Paquetes transmitidos:",transmitted_packets)
 
         # Step 2: Check if collision will happen
@@ -148,45 +154,45 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
                                 break
                     else:
                         node.non_persistent_bus_busy(R)
-                        print("Colisiones por bus ocupado:",
-                              node.wait_collisions)
+                        #print("Colisiones por bus ocupado:",node.wait_collisions)
 
                 if will_collide:
                     collsion_occurred_once = True
                     transmitted_packets += 1
                     node.collision_occured(R)
-                    print("Cantidad de colisiones previstas:", node.collisions)
+                    #print("Cantidad de colisiones previstas:", node.collisions)
 
         # Step 3: If a collision occured then retry
         # otherwise update all nodes latest packet arrival times and proceed to the next packet
         if collsion_occurred_once is not True:  # If no collision happened
             successfuly_transmitted_packets += 1
-            #print("Paquetes exitosamente transmitidos:",successfuly_transmitted_packets)
             min_node.pop_packet()
         else:    # If a collision occurred
             min_node.collision_occured(R)
-            #print("Cantidad de colisiones:",min_node.collisions)
+            collision_ocurred_gui += 1
+            refresh_collisions_data(collisions_label, collision_ocurred_gui)
+
+        refresh_success_packets_data(
+            success_packets_label, successfuly_transmitted_packets)
 
     efficiency = successfuly_transmitted_packets/float(transmitted_packets)
     throughput = round(
         (L * successfuly_transmitted_packets) /
         float(curr_time + (L/R)) * pow(10, -6), 4
     ), " Mbps"
-    print("Paquetes exitosamente transmitidos:",
-          successfuly_transmitted_packets)
-    print("Cantidad de colisiones:", min_node.collisions)
-    print("Effeciency", efficiency)
-    print("Throughput", throughput)
+    #print("Paquetes exitosamente transmitidos:",successfuly_transmitted_packets)
+    #print("Cantidad de colisiones:", min_node.collisions)
+    #print("Effeciency", efficiency)
+    #print("Throughput", throughput)
 
     EFFICIENCY.append(efficiency)
     THROUGHPUT.append(throughput)
     N_PACKETS.append(successfuly_transmitted_packets)
     HOST.append(N)
     AVG_PACKET.append(A)
-    COLISSIONS.append(min_node.collisions)
+    COLISSIONS.append(collision_ocurred_gui)
 
-    add_data(transmitted_packets, successfuly_transmitted_packets,
-             min_node.collisions, efficiency, throughput)
+    add_data(collision_ocurred_gui, round(efficiency, 4), throughput)
     plots_button = Button(gui, text="Ver Gráficos", command=plot_data)
     plots_button.grid(row=0, column=2)
     print("")
@@ -290,14 +296,15 @@ throughput.grid(row=2, column=5, pady=10, padx=10)
 throughput.config(text="Ancho de banda")
 
 
-def add_data(packets, success_packets, collisions, efficiency, throughput):
-    global data_row
-    #data_row = data_row + 1
+def handler():
+    if messagebox.askokcancel("Quit?", "Are you sure you want to quit?"):
+        sys.exit()
 
-    Label(gui, font=("times", 10, "bold"),
-          text=packets).grid(row=data_row, column=1)
-    Label(gui, font=("times", 10, "bold"),
-          text=success_packets).grid(row=data_row, column=2)
+gui.protocol("WM_DELETE_WINDOW", handler)
+
+
+def add_data(collisions, efficiency, throughput):
+    global data_row
     Label(gui, font=("times", 10, "bold"),
           text=collisions).grid(row=data_row, column=3)
     Label(gui, font=("times", 10, "bold"),
@@ -313,6 +320,33 @@ def add_initial_data(host):
           text=host).grid(row=data_row, column=0)
 
 
+def create_packets_labels():
+    global data_row
+    packets = Label(gui, font=("times", 10, "bold"), text="")
+    packets.grid(row=data_row, column=1)
+    success_packets = Label(gui, font=("times", 10, "bold"), text="")
+    success_packets.grid(row=data_row, column=2)
+    return packets, success_packets
+
+
+def create_collission_label():
+    global data_row
+    collisions = Label(gui, font=("times", 10, "bold"), text="")
+    collisions.grid(row=data_row, column=3)
+    return collisions
+
+
+def refresh_packets_data(packets_label, packets):
+    packets_label.config(text=packets)
+
+
+def refresh_success_packets_data(success_packets_label, success_packets):
+    success_packets_label.config(text=success_packets)
+
+
+def refresh_collisions_data(collisions_label, collisions):
+    collisions_label.config(text=collisions)
+
 # Run Algorithm
 # N = The number of nodes/computers connected to the LAN
 # A = Average packet arrival rate (packets per second)
@@ -320,6 +354,7 @@ def add_initial_data(host):
 # L = Packet length (in bits)
 # D = Distance between adjacent nodes on the bus/channel
 # S = Propagation speed (meters/sec)
+
 
 D = 10
 C = 3 * pow(10, 8)  # speed of light
@@ -330,12 +365,10 @@ S = (2/float(3)) * C
 
 
 def exect_simulation():
-    for N in range(20, 101, 20):
+    for N in range(4, 8, 2):
         for A in [7, 10, 20]:
             R = 1 * pow(10, 6)
             L = 1500
-            print("Ejecucion")
-            print("Persistent: ", "Nodes: ", N, "Avg Packet: ", A)
             add_initial_data(N)
             csma_cd(N, A, R, L, D, S, True)
 
