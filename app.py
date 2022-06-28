@@ -2,14 +2,26 @@
 import random
 import math
 import collections
-from datetime import datetime
 import threading 
+from datetime import datetime
+from pandas import DataFrame
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import tkinter as tk
 from tkinter import *
+
 
 maxSimulationTime = 1000
 total_num = 0
 init_time = datetime.now()
 data_row = 2
+
+EFFICIENCY = []
+AVG_PACKET = []
+THROUGHPUT = []
+N_PACKETS = []
+HOST = []
+COLISSIONS = []
 
 
 class Node:
@@ -153,7 +165,6 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
             min_node.pop_packet()
         else:    # If a collision occurred            
             min_node.collision_occured(R)
-            colision_msg()
             #print("Cantidad de colisiones:",min_node.collisions)
     
     efficiency = successfuly_transmitted_packets/float(transmitted_packets)
@@ -162,22 +173,21 @@ def csma_cd(N, A, R, L, D, S, is_persistent):
     ), " Mbps"
     print("Paquetes exitosamente transmitidos:",
           successfuly_transmitted_packets)
-    print("Cantidad de colisiones:", min_node.collisions)
-    
+    print("Cantidad de colisiones:", min_node.collisions)    
     print("Effeciency", efficiency)
     print("Throughput", throughput)
-    add_data(N, "packtes", successfuly_transmitted_packets, min_node.collisions, efficiency, throughput)
-    print("")
 
-#Alert collision
-def colision_msg():
-    popup = Tk()
-    popup.wm_title("!")
-    label =Label(popup, text="Se detectó una colisión")
-    label.pack(side="top", fill="x", pady=10)
-    B1 = Button(popup, text="Ok", command = popup.destroy)
-    B1.pack()
-    popup.mainloop()
+    EFFICIENCY.append(efficiency)
+    THROUGHPUT.append(throughput)
+    N_PACKETS.append(successfuly_transmitted_packets)
+    HOST.append(N)
+    AVG_PACKET.append(A)
+    COLISSIONS.append(min_node.collisions)
+
+    add_data(N, "packtes", successfuly_transmitted_packets, min_node.collisions, efficiency, throughput)
+    plots_button = Button(gui, text="Ver Gráficos", command=plot_data)
+    plots_button.grid(row=0, column=2)
+    print("")
 
 #Count time
 def get_simulation_time():
@@ -196,6 +206,38 @@ def refresh_time():
     text="Tiempo de simulación: " + get_simulation_time()
     clock_label.config(text=text)
     gui.after(200, refresh_time)
+
+def plot_data():
+    win = Toplevel(gui)
+    data1 = {'Ancho': THROUGHPUT, 'Host': HOST}
+    df1 = DataFrame(data1, columns=['Ancho', 'AVG'])
+    figure1 = plt.Figure(figsize=(5,4), dpi=50)
+    ax1 = figure1.add_subplot(111)
+    line1 = FigureCanvasTkAgg(figure1, win)
+    line1.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+    df1 = df1[['Ancho','Host']].groupby('Ancho').sum()
+    df1.plot(kind='line', legend=True, ax=ax1, color='r',marker='o', fontsize=10)
+    ax1.set_title('Ancho de banda vs Numero de host')
+
+    data2 = {'Colisiones': COLISSIONS, 'Host': HOST}
+    df2 = DataFrame(data2, columns=['Ancho', 'AVG'])
+    figure2 = plt.Figure(figsize=(5,4), dpi=50)
+    ax2 = figure2.add_subplot(111)
+    line2 = FigureCanvasTkAgg(figure2, win)
+    line2.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+    df2 = df2[['Colisiones','Host']].groupby('Ancho').sum()
+    df2.plot(kind='line', legend=True, ax=ax2, color='r',marker='o', fontsize=10)
+    ax2.set_title('Colisiones vs Numero de host')
+
+    data3 = {'Eficiencia': EFFICIENCY, 'Host': HOST}
+    df3 = DataFrame(data3, columns=['Ancho', 'AVG'])
+    figure3 = plt.Figure(figsize=(5,4), dpi=50)
+    ax3 = figure3.add_subplot(111)
+    line3 = FigureCanvasTkAgg(figure3, win)
+    line3.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+    df3 = df3[['Eficiencia','Host']].groupby('Ancho').sum()
+    df3.plot(kind='line', legend=True, ax=ax3, color='r',marker='o', fontsize=10)
+    ax3.set_title('Eficiencia vs Numero de host')
 
 gui = Tk()
 gui.geometry("1000x500")
@@ -240,15 +282,13 @@ throughput.config(text="Ancho de banda")
 def add_data(host, packets, sucess_packets, collisions, efficiency, throughput): 
     global data_row   
     data_row = data_row + 1
-    print("Data_row ", data_row)
-
+    
     Label(gui, font=("times", 10, "bold"), text=host).grid(row=data_row, column=0)
     Label(gui, font=("times", 10, "bold"), text=packets).grid(row=data_row, column=1)
     Label(gui, font=("times", 10, "bold"), text=sucess_packets).grid(row=data_row, column=2)
     Label(gui, font=("times", 10, "bold"), text=collisions).grid(row=data_row, column=3)
     Label(gui, font=("times", 10, "bold"), text=efficiency).grid(row=data_row, column=4)
     Label(gui, font=("times", 10, "bold"), text=throughput).grid(row=data_row, column=5)
-        
 
 # La idea seria ver como meter las varibles en la interfaz, organizar todo,
 # ademas de revisar que mas pidio la ingeniera que falte
@@ -274,8 +314,9 @@ def exect_simulation():
             R = 1 * pow(10, 6)
             L = 1500
             print("Ejecucion") 
-            print("Persistent: ", "Nodes: ", N, "Avg Packet: ", A)
+            print("Persistent: ", "Nodes: ", N, "Avg Packet: ", A)            
             csma_cd(N, A, R, L, D, S, True)
+
 thread = threading.Thread(target=exect_simulation)
 thread.start()
 gui.mainloop() #Funcion que muestra la ventana
